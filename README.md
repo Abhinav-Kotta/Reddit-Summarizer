@@ -7,3 +7,5 @@
 5. **Implement the algorithm**: Use the chosen algorithm to generate a summary of the collected Reddit posts and comments. The algorithm will analyze the text and select the most important sentences or phrases to include in the summary.
 6. **Evaluate and refine**: Test the summarizer with a variety of Reddit posts and comments to ensure that it produces accurate and relevant summaries. Refine the summarizer as needed to improve its performance.
 7. **Deploy the summarizer**: Once you are satisfied with the performance of the summarizer, deploy it to a production environment where users can access it. You may want to consider building a user interface to make it easy for users to input the Reddit posts they want to summarize and view the generated summaries.
+
+
