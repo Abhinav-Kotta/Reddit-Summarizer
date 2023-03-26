@@ -5,6 +5,7 @@ import nltk #Importing NLTK library in python
 import string #For filtering out strings
 import numpy as np
 import networkx as nx
+import re #Not used yet
 from nltk.corpus import stopwords #import stop words
 from nltk.tokenize import sent_tokenize, word_tokenize #import tokenizations
 from sklearn.metrics.pairwise import cosine_similarity #import needed for TextRank algo
@@ -12,7 +13,75 @@ from string import punctuation #Fort sorting out punctuations
 nltk.download('punkt')
 #Downloading and importing stopwords from nltk from the English langaugae
 nltk.download('stopwords') 
+nltk.download('averaged_perceptron_tagger') 
 
+
+###----- Function that prints summary based on user selection -----###
+def returnSummary(submission, comments, int):
+    if (int == 0):
+        # print("Summary:")
+        return submission
+    elif (int == 1):
+        # print("Comments:")
+        return comments
+    
+    else:
+        # print("Summary:")
+        # print(submission)
+        # print("\nComments:")
+        return comments
+
+
+###----- Function to detect bot based on the subreddit and name -----###
+def combine_sentences(summary_sentences):
+    #Not yet implemented#
+    
+    #Split the two sentences
+    sentences = sent_tokenize(summary_sentences)
+    
+    #Just in case we don't have two sentences; more of a safe gaurd
+    if len(sentences) == 2:
+        #Assign sentence 1 and sentence 2
+        sentence1, sentence2 = sentences[0], sentences[1]
+
+        # Tokenize the sentences
+        tokens1 = word_tokenize(sentence1)
+        tokens2 = word_tokenize(sentence2)
+        
+
+        # Identify the part of speech for each token
+        tagged_tokens1 = nltk.pos_tag(tokens1)
+        tagged_tokens2 = nltk.pos_tag(tokens2)
+
+        ## Identify the subject and verb in each sentence
+        subject1, verb1 = None, None
+        subject2, verb2 = None, None
+
+        for tag in tagged_tokens1:
+            if tag[1].startswith('V'):
+                verb1 = tag[0]
+            elif tag[1].startswith('N'):
+                subject1 = tag[0]
+
+        for tag in tagged_tokens2:
+            if tag[1].startswith('V'):
+                verb2 = tag[0]
+            elif tag[1].startswith('N'):
+                subject2 = tag[0]
+
+        # Combine the sentences by selecting the subject and verb from each sentence
+        if subject1 and verb2:
+            # Use the subject from sentence 1 and the verb and object from sentence 2
+            object2 = re.sub(f'^{verb2}\s*', '', sentence2)
+            return f"{subject1} {verb2} {object2}"
+        elif subject2 and verb1:
+            # Use the subject from sentence 2 and the verb and object from sentence 1
+            object1 = re.sub(f'^{verb1}\s*', '', sentence1)
+            return f"{subject2} {verb1} {object1}"
+        else:
+            return "Could not summarize"
+    
+    
 ###----- Function to detect bot based on the subreddit and name -----###
 def detect_bot(name):
     #Check for common bot phrases or patterns
@@ -25,15 +94,31 @@ def detect_bot(name):
         
     #Passed all of our tests, return False
     return False
+
 ###----- Helper function for summarize, returns preprocess_text -----###
 def preprocess_text(text):
     stop_words = set(stopwords.words('english'))
     tokens = word_tokenize(text)
-    filtered_tokens = [token.lower() for token in tokens if token.lower() not in stop_words and token not in punctuation]
+    filtered_tokens = [token.lower() for token in tokens if token.lower() not in stop_words and token not in punctuation and token != '\n']
+    
     return filtered_tokens
 
 ###----- Summarizes text by using the TextRank Algorithm -----###
 def summarize_text(text, summary_length):
+    """
+    Preprocess the text by filtering out stop words and punctuations
+    Tokenizes the text into sentences
+        preprocess_text
+        sent_tokenize
+    
+    Create a sentence embedding for each sentence using a bag-of-words representation
+    Create a graph where each node is a sentence
+        Edges between nodes are weighted by the cosine similarity between the sentence embeddings
+    
+    PageRank algorithm is applied to the graph and calculates the imortance score for each sentence
+    Sentences are sorted by their importance Score and the top N (summary_length parameter) are selected to form the "summary"
+    If there are no sentences, it returns "No comment"
+    """
     # Preprocess the text data
     filtered_tokens = preprocess_text(text)
     # Tokenize the text data into sentences
@@ -41,7 +126,9 @@ def summarize_text(text, summary_length):
     
     #For edge cases
     if not sentences:
-        return ""
+        if (text == submission.selftext):
+            return ('• ' + submission.title)
+        return "Could not summarize"
     # Create sentence embeddings using a pre-trained word embedding model like Word2Vec or GloVe
     # Here, we'll use a simple bag-of-words representation for each sentence
     sentence_vectors = []
@@ -60,7 +147,6 @@ def summarize_text(text, summary_length):
             similarity = cosine_similarity(sentence_vectors[i].reshape(1,-1), sentence_vectors[j].reshape(1,-1))[0][0]
             sentence_similarity_graph.add_edge(i, j, weight=similarity)
     # Apply the PageRank algorithm to the sentence graph to calculate the importance score for each sentence
-    
     #Check for out of bound cases
     if sentence_similarity_graph.number_of_nodes() > 0:
         scores = nx.pagerank(sentence_similarity_graph)
@@ -71,10 +157,10 @@ def summarize_text(text, summary_length):
             summary_sentences = [ranked_sentences[i][1] for i in range(summary_length)]
         else:
             summary_sentences = [ranked_sentences[i][1] for i in range(len(ranked_sentences))]
-        summary = ' '.join(summary_sentences)
-        return summary
+        summary = ['• ' + s for s in summary_sentences]
+        return '\n'.join(summary)
     else:
-        return ""
+        return [""]
 
 ###----- Helper Function... removing stop words -----###
 def filterWords(comment):
@@ -109,19 +195,22 @@ reddit_read_only = praw.Reddit(client_id="vVsTe3SaUW3ERIf18O5Wew",         # you
 def hello():
     return '<h1>Hello, app.py</h1>'
 
+url = "https://www.reddit.com/r/lianli/comments/122dfvh/issues_with_vertical_mounted_gpu_video_cables_on/"
+submission = reddit_read_only.submission(url=url)
+
 @app.route('/comments')
 def get_reddit_comments():
-    
-    url = "https://www.reddit.com/r/buildapcsales/comments/121zxi1/gpu_asrock_radeon_rx_6800_xt_phantom_gaming/"
-    submission = reddit_read_only.submission(url=url)
+
+    """
+    Give the user an option to summarize:
+    0: Submission
+    1: Comments
+    anything else: Both
+    """
 
     from praw.models import MoreComments
-
-    #Creating array for post comments and filteretedComments
-    filtered_comments = []
-    post_comments = []
+    #Creating a string to conjoin all the comments together
     conjoined_comments = ""
- 
     for comment in submission.comments:
         if type(comment) == MoreComments:
             continue
@@ -132,9 +221,10 @@ def get_reddit_comments():
     
         #Implement helper function to detect botnames and ignore them 
         conjoined_comments = conjoined_comments + comment.body + ". "
- 
-    # creating a dataframe
-    comments_df = pd.DataFrame(filtered_comments, columns=['comment'])
-    result = summarize_text(conjoined_comments, 3)
 
-    return '<h1>{}</h1>'.format(result)
+
+    printSubmission = summarize_text(submission.selftext, 2)
+    printComments = summarize_text(conjoined_comments, 3)
+    userInput = 2 #both by default but we can update this later
+    result = returnSummary(printSubmission, printComments, userInput)
+    return result
