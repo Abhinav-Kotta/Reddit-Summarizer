@@ -1,4 +1,4 @@
-#!/Users/mhuerta/Github/Reddit-Summarizer/venv/bin/python3.11
+#!/Users/mhuerta/Github/Reddit-Summarizer/venv/bin/python
 # -*- coding: utf-8 -*-
 import re
 import sys
