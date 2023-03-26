@@ -23,7 +23,8 @@ label = ctk.CTkLabel(
     fg_color= '#FF5700',
     text_color= 'white',
     corner_radius= 5, 
-    font=ctk.CTkFont(size=20, weight="bold"))
+    font=label_font
+    )
 label.pack(padx=10, pady=20)
 
 # Entry for the Reddit URL
@@ -42,7 +43,7 @@ button = ctk.CTkButton(
     fg_color= '#FF5700',
     text_color= 'white',
     corner_radius= 5, 
-    font=ctk.CTkFont(size=20, weight="bold"),
+    font=label_font,
     hover = True,
     command= button_event)
 button.pack(padx=10,pady =10)
