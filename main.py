@@ -43,6 +43,15 @@ button = ctk.CTkButton(
     )
 button.pack(padx=10,pady =10)
 
+# Summary textbox header
+summary_header = ctk.CTkLabel(
+    window, 
+    text = 'Post/Comment Summary', 
+    fg_color= '#FF5700',
+    text_color= 'white',
+    corner_radius= 5, 
+    font=ctk.CTkFont(size=20, weight="bold"))
+summary_header.pack(padx=10, pady=50)
 
 # run 
 window.mainloop()
