@@ -4,6 +4,7 @@ import nltk #Importing NLTK library in python
 import string #For filtering out strings
 import numpy as np
 import networkx as nx
+import re
 from nltk.corpus import stopwords #import stop words
 from nltk.tokenize import sent_tokenize, word_tokenize #import tokenizations
 from sklearn.metrics.pairwise import cosine_similarity #import needed for TextRank algo
@@ -17,13 +18,17 @@ nltk.download('averaged_perceptron_tagger')
 ###----- Function that prints summary based on user selection -----###
 def printSummary(submission, comments, int):
     if (int == 0):
-        print("Submission Summary:\n" + submission)
+        print("Summary:")
+        print(submission)
     elif (int == 1):
-        print("Comment Summary:\n" + comments)
+        print("Comments:")
+        print(comments)
     
     else:
-        print("Submission Summary:\n" + submission)
-        print("\nComment Summary:\n" + comments)
+        print("Summary:")
+        print(submission)
+        print("\nComments:")
+        print(comments)
 
 
 ###----- Function to detect bot based on the subreddit and name -----###
@@ -39,6 +44,7 @@ def combine_sentences(summary_sentences):
         # Tokenize the sentences
         tokens1 = word_tokenize(sentence1)
         tokens2 = word_tokenize(sentence2)
+        
 
         # Identify the part of speech for each token
         tagged_tokens1 = nltk.pos_tag(tokens1)
@@ -90,7 +96,8 @@ def detect_bot(name):
 def preprocess_text(text):
     stop_words = set(stopwords.words('english'))
     tokens = word_tokenize(text)
-    filtered_tokens = [token.lower() for token in tokens if token.lower() not in stop_words and token not in punctuation]
+    filtered_tokens = [token.lower() for token in tokens if token.lower() not in stop_words and token not in punctuation and token != '\n']
+    
     return filtered_tokens
 
 ###----- Summarizes text by using the TextRank Algorithm -----###
@@ -121,6 +128,8 @@ def summarize_text(text, summary_length):
     
     #For edge cases
     if not sentences:
+        if (text == submission.selftext):
+            return ('• ' + submission.title)
         return "Could not summarize"
     # Create sentence embeddings using a pre-trained word embedding model like Word2Vec or GloVe
     # Here, we'll use a simple bag-of-words representation for each sentence
@@ -150,10 +159,10 @@ def summarize_text(text, summary_length):
             summary_sentences = [ranked_sentences[i][1] for i in range(summary_length)]
         else:
             summary_sentences = [ranked_sentences[i][1] for i in range(len(ranked_sentences))]
-        summary = ' '.join(summary_sentences)
-        return summary
+        summary = ['• ' + s for s in summary_sentences]
+        return '\n'.join(summary)
     else:
-        return ""
+        return [""]
 
 ###----- Helper Function... removing stop words -----###
 def filterWords(comment):
@@ -181,7 +190,7 @@ reddit_read_only = praw.Reddit(client_id="vVsTe3SaUW3ERIf18O5Wew",         # you
                                client_secret="RbS0oC_yqN16XuZ0MoMCJxv8sLa7SA",      # your client secret
                                user_agent="Summarizer")        # your user agent
  
-url = "https://www.reddit.com/r/ucf/comments/1218051/did_anyone_else_have_a_poor_experience_with_ucf/"
+url = "https://www.reddit.com/r/lianli/comments/122dfvh/issues_with_vertical_mounted_gpu_video_cables_on/"
 submission = reddit_read_only.submission(url=url)
 
 """
@@ -207,6 +216,6 @@ for comment in submission.comments:
 
 
 printSubmission = summarize_text(submission.selftext, 2)
-printComments = summarize_text(conjoined_comments, 2)
+printComments = summarize_text(conjoined_comments, 3)
 userInput = 2 #both by default but we can update this later
 printSummary(printSubmission, printComments, userInput)
