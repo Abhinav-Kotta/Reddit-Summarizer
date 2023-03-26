@@ -10,6 +10,9 @@ window = ctk.CTk()
 window.title('Reddit Web-Scraper')
 window.geometry('780x480')
 
+# font for all buttons/labels
+label_font=ctk.CTkFont(family="Consolas", size=20, weight="bold")
+
 # widgets
 label = ctk.CTkLabel(
     window, 
@@ -17,7 +20,8 @@ label = ctk.CTkLabel(
     fg_color= '#FF5700',
     text_color= 'white',
     corner_radius= 5, 
-    font=ctk.CTkFont(size=20, weight="bold"))
+    font=label_font
+    )
 label.pack(padx=10, pady=20)
 
 # Entry for the Reddit URL
@@ -37,7 +41,7 @@ button = ctk.CTkButton(
     fg_color= '#FF5700',
     text_color= 'white',
     corner_radius= 5, 
-    font=ctk.CTkFont(size=20, weight="bold"),
+    font=label_font,
     hover = True,
     command= lambda: print(f'Button was pressed: URL {url_var.get()}')
     )
@@ -50,7 +54,8 @@ summary_header = ctk.CTkLabel(
     fg_color= '#FF5700',
     text_color= 'white',
     corner_radius= 5, 
-    font=ctk.CTkFont(size=20, weight="bold"))
+    font=label_font
+    )
 summary_header.pack(padx=10, pady=50)
 
 # run 
