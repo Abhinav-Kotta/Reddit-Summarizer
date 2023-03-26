@@ -4,7 +4,7 @@ import nltk #Importing NLTK library in python
 import string #For filtering out strings
 import numpy as np
 import networkx as nx
-import re
+import re #Not used yet
 from nltk.corpus import stopwords #import stop words
 from nltk.tokenize import sent_tokenize, word_tokenize #import tokenizations
 from sklearn.metrics.pairwise import cosine_similarity #import needed for TextRank algo
@@ -33,7 +33,9 @@ def printSummary(submission, comments, int):
 
 ###----- Function to detect bot based on the subreddit and name -----###
 def combine_sentences(summary_sentences):
-    #Split the two sentences 
+    #Not yet implemented#
+    
+    #Split the two sentences
     sentences = sent_tokenize(summary_sentences)
     
     #Just in case we don't have two sentences; more of a safe gaurd
