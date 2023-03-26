@@ -21,9 +21,13 @@ label = ctk.CTkLabel(
 label.pack(padx=10, pady=20)
 
 # Entry for the Reddit URL
-url_var = tkinter.StringVar()
+url_var = tkinter.StringVar(window,"Summarize a comment here...")
+print(url_var.get())
 link = ctk.CTkEntry(window, width=350, height=40, textvariable=url_var)
 link.pack()
+
+# url_var.set("testasdfasfasdf")
+# print(url_var.get())
 
 # Insert URL for Reddit to summarize
 # command= lambda: print('Button was pressed')
@@ -35,9 +39,10 @@ button = ctk.CTkButton(
     corner_radius= 5, 
     font=ctk.CTkFont(size=20, weight="bold"),
     hover = True,
-    command= lambda: print('Button was pressed' )
+    command= lambda: print(f'Button was pressed: URL {url_var.get()}')
     )
 button.pack(padx=10,pady =10)
+
 
 # run 
 window.mainloop()
