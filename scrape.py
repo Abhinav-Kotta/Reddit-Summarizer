@@ -1,4 +1,7 @@
 import praw
+import requests
+
+
 
 #Needed API
 reddit = praw.Reddit(
